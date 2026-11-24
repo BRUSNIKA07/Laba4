@@ -13,6 +13,6 @@ function pick(name: string): unknown {
 export function loadBalance(): Balance {
   return parseBalance({
     units: pick('units'), items: pick('items'), commands: pick('commands'), waves: pick('waves'),
-    economy: pick('economy'), rewards: pick('rewards'), sortie: pick('sortie'), map: pick('map'),
+    economy: pick('economy'), rewards: pick('rewards'), sortie: pick('sortie'), map: pick('map'), squads: pick('squads'), tactics: pick('tactics'),
   });
 }

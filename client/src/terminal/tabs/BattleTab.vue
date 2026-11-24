@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ASCII_LEGEND, renderAscii } from '@outpost/shared';
+import { ASCII_LEGEND, renderAscii, ROLES } from '@outpost/shared';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { NightRenderer } from '../../night/NightRenderer';
+import { NightRenderer, SQUAD_COLORS } from '../../night/NightRenderer';
 import { useGameStore } from '../../stores/game';
 import ConsolePanel from '../ConsolePanel.vue';
 
@@ -21,7 +21,7 @@ const ascii = () => renderAscii(g.need());
 onMounted(async () => {
   if (!host.value) return;
   try {
-    renderer = new NightRenderer(host.value, () => g.state, () => g.drainFx());
+    renderer = new NightRenderer(host.value, () => g.state, () => g.drainFx(), () => g.gridVisible);
     await renderer.init();
   } catch (e) {
     // если PixiJS не запустился, остаётся текстовый вид
@@ -42,6 +42,10 @@ onBeforeUnmount(() => renderer?.destroy());
         <div class="dim tiny">{{ ASCII_LEGEND }}</div>
       </template>
       <div class="small">{{ info() }}</div>
+      <div class="small" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center">
+        <span v-for="role in ROLES" :key="role" :style="{color: '#' + SQUAD_COLORS[role].toString(16).padStart(6,'0')}">■ {{ role }}: {{ g.need().night?.soldiers.filter(s => s.squad === role).length ?? 0 }}</span>
+        <span>Сетка: {{ g.gridVisible ? 'ON' : 'OFF' }}</span>
+      </div>
     </div>
     <div class="battle-bottom"><ConsolePanel compact /></div>
   </div>

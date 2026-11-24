@@ -7,10 +7,10 @@ import { addResources } from '../types/resources';
 import { soldierBase, soldierDamage, soldierMaxHp } from './army';
 import { emit, log } from './log';
 import { findPath } from './pathfinding';
+import { assignSquads, syncRoster } from './squads';
 import { nextRandom } from './rng';
+import { passable, walk, withinLeash, rangedCover } from './tactics';
 
-/** Радиус, в котором солдаты замечают врагов. */
-const AGGRO = 7;
 
 export type NightOutcome = 'ongoing' | 'cleared' | 'breach';
 
@@ -29,12 +29,12 @@ function approachTile(state: GameState): Vec {
   return { x: state.map.gate.x - 1, y: state.map.gate.y };
 }
 
-function computePath(state: GameState, from: Vec): Vec[] {
+function computePath(state: GameState, b: Balance, from: Vec, flank=false): Vec[] {
   const m = state.map;
   const blocked = new Set<number>();
   for (const s of state.bunker.structures) {
-    if (s.kind === 'barricade' && s.hp > 0) {
-      const sl = m.barricadeSlots[s.slot];
+    if (s.kind !== 'gate' && s.hp > 0) {
+      const sl = (s.kind === 'barricade' ? m.barricadeSlots : m.turretSlots)[s.slot];
       if (sl) blocked.add(sl.y * m.width + sl.x);
     }
   }
@@ -42,12 +42,12 @@ function computePath(state: GameState, from: Vec): Vec[] {
     const t = m.tiles[y * m.width + x];
     if (t === TILE.tree || t === TILE.rock || t === TILE.bunker) return Infinity;
     if (blocked.has(y * m.width + x)) return Infinity;
-    return t === TILE.road ? 1 : 2.5; // враги предпочитают дорогу
+    return flank ? (t === TILE.road ? b.tactics.enemyRoadCost : 1) : (t === TILE.road ? 1 : b.tactics.enemyRoadCost); // враги предпочитают дорогу
   };
   const goal = approachTile(state);
   const path = findPath(m.width, m.height, cost, from, goal);
-  // Запасной вариант: если пути нет, идём прямо по дороге.
-  return path ?? m.road.slice(m.road.findIndex((r) => r.x === from.x && r.y === from.y));
+  // Если пути нет, не проходим сквозь препятствия.
+  return path ?? [];
 }
 
 /** Сколько врагов в каждой волне и какого типа; результат — очередь появлений. */
@@ -72,12 +72,13 @@ function planWaves(state: GameState, b: Balance): { spawns: WaveSpawn[]; starts:
 
 /** Начало ночи: создаём солдат из армии, планируем волны. */
 export function startNight(state: GameState, b: Balance): void {
-  const army = state.bunker.army;
+  syncRoster(state);
+  const assigned = assignSquads(state.roster, b.squads.weights);
   const posts = state.map.soldierPosts;
   const soldiers: Soldier[] = [];
   let id = 1;
-  const make = (kind: 'melee' | 'ranged', n: number) => {
-    for (let i = 0; i < n; i++) {
+  for (const unit of assigned) {
+      const kind = unit.kind;
       const post = posts[soldiers.length % posts.length]!;
       // если солдат больше, чем постов, разносим их по клетке
       const ring = Math.floor(soldiers.length / posts.length);
@@ -85,16 +86,12 @@ export function startNight(state: GameState, b: Balance): void {
       const oy = (Math.floor(ring / 3) % 3) * 0.25 - 0.25;
       const hp = soldierMaxHp(state, b, kind);
       soldiers.push({
-        id: id++, kind, hp, maxHp: hp,
+        id: id++, ...unit, hp, maxHp: hp,
         x: post.x + 0.5 + ox, y: post.y + 0.5 + oy,
         homeX: post.x + 0.5 + ox, homeY: post.y + 0.5 + oy,
-        cooldown: 0,
+        cooldown: 0, order: { mode: 'auto' },
       });
-    }
-  };
-  // стрелки сзади (более дальние посты), ближники ближе к дороге — посты уже упорядочены от ворот
-  make('melee', army.melee);
-  make('ranged', army.ranged);
+  }
 
   const { spawns, starts } = planWaves(state, b);
   const night: NightState = {
@@ -111,13 +108,14 @@ function spawnEnemy(state: GameState, b: Balance, night: NightState, kind: Enemy
   const day = state.day;
   const hp = Math.round(def.hp * (1 + b.waves.hpPerDay * (day - 1)));
   const start = state.map.road[0]!;
-  const path = computePath(state, start);
+  const flank = nextRandom(state) < b.tactics.flankShare;
+  const path = computePath(state, b, start, flank);
   night.enemies.push({
     id: night.nextId++, kind, x: start.x + 0.5, y: start.y + 0.5,
     hp, maxHp: hp,
     damage: def.damage * (1 + b.waves.damagePerDay * (day - 1)),
     range: def.range, cooldownTicks: def.cooldownTicks, speed: def.speed,
-    cooldown: 0, path, pathIdx: 1, pathVersion: night.pathVersion, loot: def.loot,
+    cooldown: 0, flank, path, pathIdx: 1, pathVersion: night.pathVersion, loot: def.loot,
   });
 }
 
@@ -195,7 +193,7 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
   for (const e of night.enemies) {
     if (e.pathVersion !== night.pathVersion) {
       const from = { x: Math.floor(e.x), y: Math.floor(e.y) };
-      e.path = computePath(state, from);
+      e.path = computePath(state, b, from, e.flank);
       e.pathIdx = 1;
       e.pathVersion = night.pathVersion;
     }
@@ -208,27 +206,57 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
   }
   night.fires = night.fires.filter((f) => f.ticksLeft > 0);
 
-  // --- солдаты
+  // --- солдаты: приказ, реакция на нападение, возвращение к позиции
   for (const s of night.soldiers) {
+    if(s.hp<=0) continue;
     if (s.cooldown > 0) s.cooldown--;
     const base = soldierBase(b, s.kind);
     const isMelee = s.kind === 'melee';
-    const reach = isMelee ? AGGRO : base.range;
-    let target = focus ? nearest(s, night.enemies.filter((e) => e.kind === focus), reach) : null;
-    target ??= nearest(s, night.enemies, reach);
-    if (!target) {
-      moveToward(s, s.homeX, s.homeY, base.speed);
+    const order=s.order??{mode:'auto' as const};
+    const assigned=order.mode!=='auto'?order:null;
+    const anchor=assigned?.destination??{x:s.homeX,y:s.homeY};
+    const cost=passable(state);
+    const allowed=(p:Vec)=>!assigned||withinLeash(state,b,assigned.sector,p);
+    const localCost=(x:number,y:number)=>allowed({x:x+0.5,y:y+0.5})?cost(x,y):Infinity;
+    const active=night.enemies.filter(e=>e.hp>0);
+    const attacker=active.find(e=>e.id===s.attackerId);
+    if(!attacker) delete s.attackerId;
+    const traveling=assigned&&!assigned.arrived;
+    const reach=isMelee?b.tactics.meleeDetection:base.range;
+    let target: Enemy|null=null;
+    if(traveling) target=attacker??null;
+    else {
+      const candidates=active.filter(allowed);
+      // Мelee атакует ближайшего; focus по-прежнему влияет на стрелков.
+      target=!isMelee&&focus?nearest(s,candidates.filter(e=>e.kind===focus),reach):null;
+      target??=nearest(s,candidates,reach);
+    }
+    if(!target) {
+      if(assigned||active.length===0) {
+        if(walk(state,s,anchor,base.speed,cost)&&assigned) assigned.arrived=true;
+      } else {
+        // В автоматическом режиме ближники выдвигаются к ближайшей угрозе.
+        const enemy=nearest(s,active,Infinity);
+        if(enemy) walk(state,s,enemy,base.speed,cost);
+      }
       continue;
     }
-    const d = dist(s.x, s.y, target.x, target.y);
-    if (d > base.range) {
-      if (isMelee) moveToward(s, target.x, target.y, base.speed);
+    const d=dist(s.x,s.y,target.x,target.y);
+    const bounded=!!assigned&&!traveling;
+    const movementCost=bounded?localCost:cost;
+    const scope=bounded?assigned.sector:'';
+    if(!isMelee&&d<b.tactics.rangedRetreatDistance&&!traveling) {
+      const cover=rangedCover(state,b,s,target);
+      if(cover&&allowed(cover)) walk(state,s,cover,base.speed,movementCost,scope);
+    }
+    if(d>base.range) {
+      if(isMelee||traveling) walk(state,s,target,base.speed,movementCost,scope);
       continue;
     }
-    if (s.cooldown === 0) {
-      target.hp -= soldierDamage(state, b, s.kind) * cheer;
-      s.cooldown = Math.max(1, Math.round(base.cooldownTicks / speedUp));
-      if (!isMelee) emit(state, { t: 'shot', by: 'soldier', from: { x: s.x, y: s.y }, to: { x: target.x, y: target.y } });
+    if(s.cooldown===0) {
+      target.hp-=soldierDamage(state,b,s.kind)*cheer;
+      s.cooldown=Math.max(1,Math.round(base.cooldownTicks/speedUp));
+      if(!isMelee) emit(state,{t:'shot',by:'soldier',from:{x:s.x,y:s.y},to:{x:target.x,y:target.y}});
     }
   }
 
@@ -238,7 +266,7 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
     if (st.cooldown > 0) { st.cooldown--; continue; }
     const def = b.units.turrets[st.turret ?? 'basic'];
     const pos = structurePos(state, st);
-    const target = nearest(pos, night.enemies, def.range);
+    const target = nearest(pos, night.enemies.filter(e=>e.hp>0), def.range);
     if (!target) continue;
     const upg = b.commands['upgrade.turret']?.params['damageBonus'] ?? 0;
     target.hp -= def.damage * (1 + upg * (st.level - 1));
@@ -255,10 +283,12 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
     let target: { x: number; y: number; apply: (d: number) => void } | null = null;
     let bd = e.range;
     for (const s of night.soldiers) {
+      if(s.hp<=0) continue;
       const d = dist(e.x, e.y, s.x, s.y);
-      if (d <= bd) { bd = d; target = { x: s.x, y: s.y, apply: (dmg) => { s.hp -= dmg; } }; }
+      if (d <= bd) { bd = d; target = { x: s.x, y: s.y, apply: (dmg) => { s.hp -= dmg; s.attackerId=e.id; } }; }
     }
     for (const st of alive) {
+      if(st.hp<=0) continue;
       const p = structurePos(state, st);
       const d = dist(e.x, e.y, p.x, p.y);
       if (d <= bd) { bd = d; target = { x: p.x, y: p.y, apply: (dmg) => { st.hp -= dmg; } }; }
@@ -271,6 +301,15 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
       }
       continue;
     }
+    const soldier=nearest(e,night.soldiers.filter(s=>s.hp>0),b.tactics.enemyDetection);
+    if(soldier&&e.flank) {
+      const prev={x:e.x,y:e.y};
+      walk(state,e,soldier,e.speed);
+      // Пересчитываем путь к воротам после преследования.
+      e.path=[];e.pathIdx=0;
+      if(e.x!==prev.x||e.y!==prev.y) continue;
+    }
+    if(!e.path.length) {e.path=computePath(state,b,{x:Math.floor(e.x),y:Math.floor(e.y)},e.flank);e.pathIdx=0;}
     const next = e.path[e.pathIdx];
     if (next) {
       if (moveToward(e, next.x + 0.5, next.y + 0.5, e.speed)) e.pathIdx++;
@@ -298,6 +337,7 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
     state.stats.soldiersLost++;
     state.stats.peopleLost++;
     state.bunker.army[s.kind]--;
+    state.roster = state.roster.filter(u => u.callsign !== s.callsign);
     emit(state, { t: 'death', side: 'soldier', kind: s.kind, at: { x: s.x, y: s.y } });
   }
   night.soldiers = survivorsS;

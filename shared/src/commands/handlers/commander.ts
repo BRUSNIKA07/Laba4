@@ -1,3 +1,4 @@
+import { syncRoster } from '../../game/squads';
 import { armyLevel } from '../../game/army';
 import { param } from '../../game/balance';
 import { scaleCost } from '../../types/resources';
@@ -29,6 +30,7 @@ function train(kind: 'melee' | 'ranged'): Handler {
     if (err) return fail(err);
     state.bunker.people.recruits -= n;
     state.bunker.army[kind] += n;
+    syncRoster(state);
     return done(`Обучено: ${n} (${kind === 'melee' ? 'ближники' : 'стрелки'}). В армии: ${soldiers + n}/${state.bunker.soldierCap}.`);
   };
 }

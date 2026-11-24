@@ -1,0 +1,11 @@
+{
+  "meleeDetection": 12,
+  "enemyDetection": 5,
+  "rangedRetreatDistance": 2.5,
+  "rangedSupportDistance": 2,
+  "adjacentSectorRadius": 1,
+  "positionCoverBonus": 1.5,
+  "positionSeparationBonus": 2,
+  "enemyRoadCost": 2.5,
+  "flankShare": 0.4
+}

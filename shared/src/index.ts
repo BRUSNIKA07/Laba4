@@ -31,3 +31,6 @@ export { armyLevel } from './game/army';
 export { majority } from './game/vote';
 export { structurePos } from './game/night';
 export { renderAscii, ASCII_LEGEND } from './game/ascii';
+
+export * from './game/squads';
+export * from './game/sectors';

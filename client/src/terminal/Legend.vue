@@ -25,6 +25,10 @@ function head(usage: string): string {
   <aside class="legend">
     <header>ЛЕГЕНДА <span class="dim small">нажмите на команду</span></header>
     <div class="legend-body">
+      <section><h4>ОТОБРАЖЕНИЕ</h4>
+        <button class="entry" @click="emit('pick', 'grid on')"><span class="usage">grid on</span><span class="desc">Показать сетку A1–H8</span></button>
+        <button class="entry" @click="emit('pick', 'grid off')"><span class="usage">grid off</span><span class="desc">Скрыть сетку</span></button>
+      </section>
       <section v-for="sec in sections" :key="sec.title">
         <h4>{{ sec.title }}</h4>
         <button

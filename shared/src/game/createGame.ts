@@ -5,6 +5,7 @@ import { emptyResources, addResources } from '../types/resources';
 import { validateRoleAssignment, type PlayerInfo } from '../types/roles';
 import { emptyInventory, addItem } from './inventory';
 import { generateMap } from './mapgen';
+import { syncRoster } from './squads';
 import { resetVotes } from './vote';
 
 export interface NewGameOptions {
@@ -65,6 +66,7 @@ export function createGame(b: Balance, opts: NewGameOptions): GameState {
     treasury,
     bunker,
     map,
+    roster: [],
     night: null,
     inventory,
     sortie: null,
@@ -76,6 +78,7 @@ export function createGame(b: Balance, opts: NewGameOptions): GameState {
     stats: { kills: 0, soldiersLost: 0, peopleLost: 0 },
     events: [],
   };
+  syncRoster(state);
   resetVotes(state);
   state.events.push({ t: 'phase', phase: 'day', day: 1 });
   state.events.push({ t: 'log', text: '== День 1. Выжившие укрылись в бункере. Наберите help.' });

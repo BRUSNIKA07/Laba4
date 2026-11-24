@@ -1,4 +1,4 @@
-import type { EnemyKind, SoldierKind } from './units';
+import type { EnemyKind, AssignedSoldier } from './units';
 import type { ResourceCost } from './resources';
 
 export interface Vec {
@@ -37,11 +37,18 @@ export interface Enemy {
   pathIdx: number;
   pathVersion: number;
   loot: ResourceCost;
+  flank?: boolean;
+  motion?: MotionPath;
 }
 
-export interface Soldier {
+export interface MotionPath { scope?: string; goal: Vec; version: number; path: Vec[]; index: number; }
+export type BattleOrder = { mode: 'auto' } | { mode: 'sector' | 'hold' | 'retreat'; destination: Vec; sector: string; arrived: boolean };
+
+export interface Soldier extends AssignedSoldier {
+  order?: BattleOrder;
+  motion?: MotionPath;
+  attackerId?: number;
   id: number;
-  kind: SoldierKind;
   x: number;
   y: number;
   hp: number;

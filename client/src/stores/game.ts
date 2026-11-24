@@ -27,6 +27,7 @@ export const useGameStore = defineStore('game', () => {
   const tab = ref<TabId>('bunker');
   const legendOpen = ref(true);
   const speed = ref(1);
+  const gridVisible = ref(true);
   let timer: ReturnType<typeof setInterval> | null = null;
   let nextId = 1;
   const fx: GameEvent[] = []; // события для анимации боя (выстрелы), их забирает рендерер
@@ -96,6 +97,7 @@ export const useGameStore = defineStore('game', () => {
     session.value = s;
     state.value = s.state;
     tab.value = 'bunker';
+    gridVisible.value = true;
     push('sys', 'ТЕРМИНАЛ БУНКЕРА v0.3. Введите help или откройте легенду справа.');
     say('СИСТЕМА', 'Чат отряда. Строка, начинающаяся с «/», выполняется как команда: /vote end, /reward 1.');
     handleEvents(s.flush());
@@ -118,7 +120,19 @@ export const useGameStore = defineStore('game', () => {
   function exec(line: string): CommandResult {
     const s = session.value;
     if (!s) return { ok: false, lines: ['Игра не запущена'] };
+    const local = line.trim().toLowerCase().split(/\s+/);
+    if (local[0] === 'grid') {
+      const ok = local.length === 2 && (local[1] === 'on' || local[1] === 'off');
+      if (ok) gridVisible.value = local[1] === 'on';
+      const result = { ok, lines: [ok ? `Сетка ${gridVisible.value ? 'включена' : 'выключена'}.` : 'Использование: grid on | grid off'] };
+      for (const l of result.lines) push(ok ? 'ok' : 'err', l);
+      return result;
+    }
     const { result, events } = s.run(line);
+    if (local[0] === 'help' && (!local[1] || local[1] === 'grid')) {
+      if (local[1] === 'grid') { result.ok = true; result.lines = []; }
+      result.lines.push('grid on | grid off — локальная координатная сетка');
+    }
     for (const l of result.lines) push(result.ok ? 'ok' : 'err', l);
     handleEvents(events);
     triggerRef(state);
@@ -157,7 +171,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   return {
-    session, state, lines, chat, history, tab, legendOpen, speed,
+    session, state, lines, chat, history, tab, legendOpen, speed, gridVisible,
     started, isNight, me, tabs,
     need, setTab, startSolo, stop, exec, submit, chatSubmit, drainFx,
   };

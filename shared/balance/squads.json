@@ -1,0 +1,8 @@
+{
+  "weights": {
+    "commander": 40,
+    "farmer": 20,
+    "manager": 20,
+    "warden": 20
+  }
+}

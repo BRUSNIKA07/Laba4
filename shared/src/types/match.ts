@@ -1,3 +1,4 @@
+import type { SoldierIdentity } from './units';
 import type { Bunker } from './bunker';
 import type { Inventory } from './items';
 import type { NightMap, NightState } from './night';
@@ -48,6 +49,7 @@ export interface GameState {
   treasury: Resources;
   bunker: Bunker;
   map: NightMap;
+  roster: SoldierIdentity[]; // постоянный список живых бойцов
   night: NightState | null;
   inventory: Inventory;
   sortie: Sortie | null;

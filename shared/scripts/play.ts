@@ -27,7 +27,7 @@ const read = (f: string) => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 const b = parseBalance({
   units: read('units.json'), items: read('items.json'), commands: read('commands.json'),
   waves: read('waves.json'), economy: read('economy.json'), rewards: read('rewards.json'),
-  sortie: read('sortie.json'), map: read('map.json'),
+  sortie: read('sortie.json'), map: read('map.json'), squads: read('squads.json'), tactics: read('tactics.json'),
 });
 
 const count = Number(arg('--players', '1'));

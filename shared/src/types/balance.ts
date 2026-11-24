@@ -1,3 +1,4 @@
+import type { Role } from './roles';
 import type { CellKind } from './bunker';
 import type { ItemId } from './items';
 import type { ResourceCost, ResourceId } from './resources';
@@ -102,7 +103,14 @@ export interface MapBalance {
   rockChance: number;
 }
 
+export interface TacticsBalance {
+  meleeDetection: number; enemyDetection: number; rangedRetreatDistance: number;
+  rangedSupportDistance: number; adjacentSectorRadius: number; positionCoverBonus: number;
+  positionSeparationBonus: number; enemyRoadCost: number; flankShare: number;
+}
+
 export interface Balance {
+  tactics: TacticsBalance;
   units: UnitsBalance;
   items: Record<ItemId, ItemDef>;
   commands: Record<string, CommandBalance>;
@@ -111,4 +119,5 @@ export interface Balance {
   rewards: RewardDef[];
   sortie: SortieBalance;
   map: MapBalance;
+  squads: { weights: Record<Role, number> };
 }

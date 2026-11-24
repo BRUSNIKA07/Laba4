@@ -15,6 +15,10 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'vote.end', patterns: ['vote end'], usage: 'vote end', description: 'Голос за окончание дня', roles: 'any', phase: 'day' },
   { id: 'reward', patterns: ['reward <n:int>'], usage: 'reward <1-3>', description: 'Голос за награду после ночи', roles: 'any', phase: 'day' },
 
+  { id: 'battle.list', patterns: ['battle list'], usage: 'battle list', description: 'Позывные, отряды, здоровье и секторы бойцов', roles: 'any', phase: 'night' },
+
+  { id: 'battle.order', patterns: ['battle <target:word> <action:word>'], usage: 'battle <позывной|squad|all|melee|ranged|роль> <A1-H8|auto|hold|retreat>', description: 'Боевой приказ доступным бойцам; all только commander', roles: 'any', phase: 'night' },
+
   // ---------- командир
   { id: 'drill', patterns: ['drill'], usage: 'drill', description: 'Муштра: +1 очко, каждые 100 очков армия получает уровень', roles: ['commander'], phase: 'day' },
   { id: 'train.melee', patterns: ['train melee <n:int>'], usage: 'train melee <n>', description: 'Обучить новобранцев в ближники', roles: ['commander'], phase: 'day' },

@@ -3,6 +3,7 @@ import { CELL_PRODUCES } from '../types/bunker';
 import type { GameState } from '../types/match';
 import { totalPeople } from '../types/bunker';
 import { addResources } from '../types/resources';
+import { syncRoster } from './squads';
 import { log } from './log';
 
 /**
@@ -53,6 +54,7 @@ export function consumeFood(state: GameState, b: Balance): { eaten: number; star
     state.bunker.army[k] -= d;
     toDie -= d;
   }
+  syncRoster(state);
   state.stats.peopleLost += starved;
   log(state, `!! Голод: погибло людей — ${starved}`);
   return { eaten: have, starved };

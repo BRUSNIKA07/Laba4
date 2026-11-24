@@ -34,7 +34,7 @@ function beginNight(state: GameState, b: Balance): void {
     chooseReward(state, b, 1);
   }
   const food = consumeFood(state, b);
-  log(state, `-- Итоги дня ${state.day}: съедено еды ${food.eaten}, погибло от голода ${food.starved}.`);
+  log(state, `-- Итоги дня ${state.day}: съедено еды ${Number(food.eaten.toFixed(2))}, погибло от голода ${food.starved}.`);
   state.bunker.incomeBoost = 0;
   resetVotes(state);
   if (totalPeople(state.bunker) <= 0) return gameOver(state, 'В бункере никого не осталось');

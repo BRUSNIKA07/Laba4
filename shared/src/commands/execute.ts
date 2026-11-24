@@ -2,6 +2,7 @@ import type { Balance } from '../types/balance';
 import type { CommandResult } from '../types/commands';
 import type { GameState } from '../types/match';
 import { fail, type Handler } from './handlers/common';
+import { battleList, battleOrder } from './handlers/battle';
 import * as cmd from './handlers/commander';
 import * as farm from './handlers/farmer';
 import * as info from './handlers/info';
@@ -12,6 +13,7 @@ import { COMMANDS } from './registry';
 
 /** id команды из registry.ts -> функция, которая её выполняет. */
 const HANDLERS: Record<string, Handler> = {
+  'battle.list': battleList, 'battle.order': battleOrder,
   help: info.help, status: info.status, people: info.people, cells: info.cells, inv: info.inv,
   'vote.end': info.voteEnd, reward: info.reward,
   drill: cmd.drill, 'train.melee': cmd.trainMelee, 'train.ranged': cmd.trainRanged,

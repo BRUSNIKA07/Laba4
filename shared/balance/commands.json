@@ -1,34 +1,197 @@
 {
-  "drill":        { "cooldownSec": 0.3, "params": { "perLevel": 100, "levelBonus": 0.05 } },
-  "train.melee":  { "cost": { "food": 5, "iron": 3 } },
-  "train.ranged": { "cost": { "food": 5, "iron": 5, "wood": 2 } },
-  "upgrade.damage": { "cost": { "gold": 150 }, "params": { "bonus": 0.5, "costGrowth": 2 } },
-  "upgrade.health": { "cost": { "gold": 150 }, "params": { "bonus": 0.5, "costGrowth": 2 } },
-  "cheer":        { "cooldownSec": 40, "params": { "durationSec": 15, "damageMult": 1.25 } },
-  "focus":        { "cooldownSec": 20, "params": { "durationSec": 15 } },
-
-  "cell.build":   { "cost": { "wood": 15, "stone": 5 } },
-  "cell.upgrade": { "cost": { "wood": 20, "stone": 15 }, "params": { "maxLevel": 5, "costGrowth": 1.6 } },
-  "heal":         { "cooldownSec": 8, "cost": { "food": 2 }, "params": { "healFraction": 0.6 } },
-
-  "send":   {},
+  "drill": {
+    "cooldownSec": 0.3,
+    "params": {
+      "perLevel": 100,
+      "levelBonus": 0.05
+    }
+  },
+  "train.melee": {
+    "cost": {
+      "food": 5,
+      "iron": 3
+    }
+  },
+  "train.ranged": {
+    "cost": {
+      "food": 5,
+      "iron": 5,
+      "wood": 2
+    }
+  },
+  "upgrade.damage": {
+    "cost": {
+      "gold": 150
+    },
+    "params": {
+      "bonus": 0.5,
+      "costGrowth": 2
+    }
+  },
+  "upgrade.health": {
+    "cost": {
+      "gold": 150
+    },
+    "params": {
+      "bonus": 0.5,
+      "costGrowth": 2
+    }
+  },
+  "cheer": {
+    "cooldownSec": 40,
+    "params": {
+      "durationSec": 15,
+      "damageMult": 1.25
+    }
+  },
+  "focus": {
+    "cooldownSec": 20,
+    "params": {
+      "durationSec": 15
+    }
+  },
+  "cell.build": {
+    "cost": {
+      "wood": 15,
+      "stone": 5
+    }
+  },
+  "cell.upgrade": {
+    "cost": {
+      "wood": 20,
+      "stone": 15
+    },
+    "params": {
+      "maxLevel": 5,
+      "costGrowth": 1.6
+    }
+  },
+  "heal": {
+    "cooldownSec": 8,
+    "cost": {
+      "food": 2
+    },
+    "params": {
+      "healFraction": 0.6
+    }
+  },
+  "send": {},
   "recall": {},
-  "build.barracks": { "cost": { "wood": 60, "stone": 40 }, "params": { "soldierCap": 10 } },
-  "build.housing":  { "cost": { "wood": 50, "stone": 30 }, "params": { "peopleCap": 10 } },
-  "build.farmroom": { "cost": { "wood": 70, "stone": 50, "iron": 10 }, "params": { "cells": 9 } },
-  "build.turret":   {},
-  "build.wall":     {},
-  "expand.defense": { "cost": { "stone": 80, "iron": 20 }, "params": { "slots": 1 } },
-  "repair.turrets": { "cooldownSec": 10, "cost": { "iron": 3 }, "params": { "fraction": 0.3 } },
-  "repair.gate":    { "cooldownSec": 10, "cost": { "stone": 5, "iron": 2 }, "params": { "fraction": 0.2 } },
-  "repair.walls":   { "cooldownSec": 10, "cost": { "wood": 4 }, "params": { "fraction": 0.4 } },
-  "repair.one":     { "cooldownSec": 6,  "cost": { "iron": 2 }, "params": { "fraction": 0.3 } },
-  "upgrade.gate":   { "cost": { "stone": 100, "iron": 30 }, "params": { "hpBonus": 200 } },
-  "upgrade.turret": { "cost": { "iron": 30, "stone": 20 }, "params": { "hpBonus": 40, "maxLevel": 3, "damageBonus": 0.3 } },
-
-  "sortie.go":   { "cost": { "food": 3 }, "params": {} },
-  "sortie.push": { "cooldownSec": 10, "params": {} },
+  "build.barracks": {
+    "cost": {
+      "wood": 60,
+      "stone": 40
+    },
+    "params": {
+      "soldierCap": 10
+    }
+  },
+  "build.housing": {
+    "cost": {
+      "wood": 50,
+      "stone": 30
+    },
+    "params": {
+      "peopleCap": 10
+    }
+  },
+  "build.farmroom": {
+    "cost": {
+      "wood": 70,
+      "stone": 50,
+      "iron": 10
+    },
+    "params": {
+      "cells": 9
+    }
+  },
+  "build.turret": {},
+  "build.wall": {},
+  "expand.defense": {
+    "cost": {
+      "stone": 80,
+      "iron": 20
+    },
+    "params": {
+      "slots": 1
+    }
+  },
+  "repair.turrets": {
+    "cooldownSec": 10,
+    "cost": {
+      "iron": 3
+    },
+    "params": {
+      "fraction": 0.3
+    }
+  },
+  "repair.gate": {
+    "cooldownSec": 10,
+    "cost": {
+      "stone": 5,
+      "iron": 2
+    },
+    "params": {
+      "fraction": 0.2
+    }
+  },
+  "repair.walls": {
+    "cooldownSec": 10,
+    "cost": {
+      "wood": 4
+    },
+    "params": {
+      "fraction": 0.4
+    }
+  },
+  "repair.one": {
+    "cooldownSec": 6,
+    "cost": {
+      "iron": 2
+    },
+    "params": {
+      "fraction": 0.3
+    }
+  },
+  "upgrade.gate": {
+    "cost": {
+      "stone": 100,
+      "iron": 30
+    },
+    "params": {
+      "hpBonus": 200
+    }
+  },
+  "upgrade.turret": {
+    "cost": {
+      "iron": 30,
+      "stone": 20
+    },
+    "params": {
+      "hpBonus": 40,
+      "maxLevel": 3,
+      "damageBonus": 0.3
+    }
+  },
+  "sortie.go": {
+    "cost": {
+      "food": 3
+    },
+    "params": {}
+  },
+  "sortie.push": {
+    "cooldownSec": 10,
+    "params": {}
+  },
   "sortie.home": {},
   "use": {},
-  "drop": {}
+  "drop": {},
+  "battle.list": {
+    "cooldownSec": 0
+  },
+  "battle.order": {
+    "cooldownSec": 0,
+    "cost": {},
+    "params": {}
+  }
 }

@@ -11,7 +11,7 @@ const input = ref('');
 const histIdx = ref(-1);
 const outEl = ref<HTMLElement | null>(null);
 const inEl = ref<HTMLInputElement | null>(null);
-const verbs = [...new Set(COMMANDS.map((c) => c.usage.split(' ')[0]!))];
+const verbs = [...new Set([...COMMANDS.map((c) => c.usage.split(' ')[0]!), 'grid'])];
 
 function send(): void {
   g.submit(input.value);

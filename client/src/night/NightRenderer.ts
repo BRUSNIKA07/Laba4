@@ -1,9 +1,10 @@
-import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js';
-import { TILE as TILE_ID, type Enemy, type GameEvent, type GameState, type Soldier, type Structure } from '@outpost/shared';
+import { Application, Container, Graphics, Sprite, Texture, Text } from 'pixi.js';
+import { TILE as TILE_ID, SECTOR_COUNT, type Role, type Enemy, type GameEvent, type GameState, type Soldier, type Structure } from '@outpost/shared';
 import { TILE, loadTextures, type SpriteKey } from './sprites';
 
 interface View {
   sprite: Sprite;
+  label?: Text;
   x: number;
   y: number;
   laneX: number; // постоянное случайное смещение «полосы»
@@ -22,6 +23,7 @@ interface Bullet {
 
 const BULLET_SPEED = 0.022; // клеток за мс
 const MAX_BULLETS = 200;
+export const SQUAD_COLORS: Record<Role, number> = { commander: 0x668aca, farmer: 0x63a66c, manager: 0xce9b49, warden: 0x9869c4 };
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
 /**
@@ -35,11 +37,14 @@ export class NightRenderer {
   private ready = false;
   private world = new Container();
   private mapLayer = new Container();
+  private gridLayer = new Container();
+  private labelLayer = new Container();
   private structLayer = new Container();
   private fireLayer = new Container();
   private unitLayer = new Container();
   private bulletLayer = new Container();
   private bars = new Graphics();
+  private orders = new Graphics();
   private enemies = new Map<number, View>();
   private soldiers = new Map<number, View>();
   private structSprites = new Map<string, Sprite>();
@@ -54,6 +59,7 @@ export class NightRenderer {
     private host: HTMLElement,
     private getState: () => GameState | null,
     private drainFx: () => GameEvent[],
+    private showGrid: () => boolean,
   ) {}
 
   async init(): Promise<void> {
@@ -67,9 +73,9 @@ export class NightRenderer {
     if (this.dead) { this.app.destroy(true, { children: true }); return; }
     this.host.appendChild(this.app.canvas);
     this.tex = await loadTextures(this.app);
-    if (this.dead) return;
+    if (this.dead) { this.app.destroy(true, { children: true }); return; }
 
-    this.world.addChild(this.mapLayer, this.structLayer, this.fireLayer, this.unitLayer, this.bulletLayer, this.bars);
+    this.world.addChild(this.mapLayer, this.gridLayer, this.structLayer, this.orders, this.fireLayer, this.unitLayer, this.bulletLayer, this.bars, this.labelLayer);
     this.app.stage.addChild(this.world);
     this.drainFx(); // старые события не нужны
     this.ready = true;
@@ -87,17 +93,35 @@ export class NightRenderer {
     if (!s) return;
     this.fit(s);
     if (this.mapKey !== s.seed) this.buildMap(s);
+    this.gridLayer.visible = this.showGrid();
     this.syncStructures(s);
     const n = s.night;
     const now = performance.now();
     const k = 1 - Math.exp(-dt * 0.012); // плавное приближение к позиции из логики
 
     this.syncUnits(this.enemies, n?.enemies ?? [], now, k, (e: Enemy) => (e.kind === 'grunt' ? 'enemy_grunt' : 'enemy_spitter'), 0.28, 0.12);
-    this.syncUnits(this.soldiers, n?.soldiers ?? [], now, k, (u: Soldier) => (u.kind === 'melee' ? 'soldier_melee' : 'soldier_ranged'), 0.18, 0.07);
+    this.syncUnits(this.soldiers, n?.soldiers ?? [], now, k, (u: Soldier) => (u.kind === 'melee' ? 'soldier_melee' : 'soldier_ranged'), 0.18, 0.07, (u: Soldier) => ({ callsign: u.callsign, color: SQUAD_COLORS[u.squad] }));
     this.syncFires(s, now);
     this.spawnBullets();
     this.moveBullets(dt);
     this.drawBars(s);
+    this.drawOrders(s);
+  }
+
+  private drawOrders(s: GameState): void {
+    this.orders.clear();
+    for (const u of s.night?.soldiers ?? []) {
+      if (!u.order || u.order.mode === 'auto') continue;
+      const v = this.soldiers.get(u.id);
+      const x = v?.x ?? u.x*TILE, y = v?.y ?? u.y*TILE;
+      const tx = u.order.destination.x*TILE, ty = u.order.destination.y*TILE;
+      const d = Math.hypot(tx-x,ty-y);
+      for (let i=0; i<d; i+=12) {
+        const end=Math.min(i+7,d);
+        this.orders.moveTo(x+(tx-x)*i/d,y+(ty-y)*i/d).lineTo(x+(tx-x)*end/d,y+(ty-y)*end/d);
+      }
+      this.orders.circle(tx,ty,5).stroke({color:SQUAD_COLORS[u.squad],width:2,alpha:0.85});
+    }
   }
 
   /** Подгоняет карту под размер окна. */
@@ -132,6 +156,20 @@ export class NightRenderer {
           else if (t === TILE_ID.rock) put('rock', x, y);
         }
       }
+    }
+    this.gridLayer.removeChildren().forEach(c => c.destroy());
+    const grid = new Graphics();
+    const w = m.width * TILE, h = m.height * TILE;
+    for (let i = 0; i <= SECTOR_COUNT; i++) {
+      grid.moveTo(i*w/SECTOR_COUNT, 0).lineTo(i*w/SECTOR_COUNT,h);
+      grid.moveTo(0,i*h/SECTOR_COUNT).lineTo(w,i*h/SECTOR_COUNT);
+    }
+    grid.stroke({color:0xc8e1c8, alpha:0.45, width:2});
+    this.gridLayer.addChild(grid);
+    for(let row=0;row<SECTOR_COUNT;row++) for(let col=0;col<SECTOR_COUNT;col++) {
+      const text = new Text({text: `${String.fromCharCode(65+col)}${row+1}`, style:{fontFamily:'monospace',fontSize:19,fill:0xd4e9d4,stroke:{color:0x15251a,width:3}}});
+      text.position.set(col*w/SECTOR_COUNT+5,row*h/SECTOR_COUNT+3);
+      this.gridLayer.addChild(text);
     }
     this.mapKey = s.seed;
   }
@@ -169,6 +207,7 @@ export class NightRenderer {
   private syncUnits<T extends { id: number; x: number; y: number }>(
     views: Map<number, View>, list: T[], now: number, k: number,
     keyOf: (u: T) => SpriteKey, lane: number, amp: number,
+    identity?: (u:T) => {callsign:string; color:number},
   ): void {
     const seen = new Set<number>();
     for (const u of list) {
@@ -177,10 +216,16 @@ export class NightRenderer {
       const tx = u.x * TILE;
       const ty = u.y * TILE;
       if (!v) {
-        const sp = new Sprite(this.tex[keyOf(u)]);
+        const sp = new Sprite(identity ? Texture.WHITE : this.tex[keyOf(u)]);
+        if (identity) { sp.width = 24; sp.height = 24; }
         sp.anchor.set(0.5);
         this.unitLayer.addChild(sp);
         v = { sprite: sp, x: tx, y: ty, laneX: rnd(-lane, lane), laneY: rnd(-lane, lane), phase: rnd(0, 6.28), freq: rnd(0.002, 0.005), amp };
+        if (identity) {
+          v.label = new Text({text: '',style:{fontFamily:'monospace',fontSize:19,fontWeight:'bold',fill:0xffffff,stroke:{color:0x101810,width:4}}});
+          v.label.anchor.set(0.5,0);
+          this.labelLayer.addChild(v.label);
+        }
         views.set(u.id, v);
       }
       const wx = (v.laneX + Math.sin(now * v.freq + v.phase) * v.amp) * TILE;
@@ -188,9 +233,15 @@ export class NightRenderer {
       v.x += (tx + wx - v.x) * k;
       v.y += (ty + wy - v.y) * k;
       v.sprite.position.set(v.x, v.y);
+      if (identity && v.label) {
+        const info = identity(u);
+        v.sprite.tint = info.color;
+        v.label.text = info.callsign;
+        v.label.position.set(v.x,v.y+13);
+      }
     }
     for (const [id, v] of views) {
-      if (!seen.has(id)) { v.sprite.destroy(); views.delete(id); }
+      if (!seen.has(id)) { v.sprite.destroy(); v.label?.destroy(); views.delete(id); }
     }
   }
 

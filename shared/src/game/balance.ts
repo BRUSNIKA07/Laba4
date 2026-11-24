@@ -1,3 +1,4 @@
+import { ROLES } from '../types/roles';
 import { ITEM_IDS } from '../types/items';
 import type { Balance, CommandBalance } from '../types/balance';
 
@@ -11,6 +12,8 @@ export interface RawBalance {
   rewards: unknown;
   sortie: unknown;
   map: unknown;
+  squads: unknown;
+  tactics: unknown;
 }
 
 function isObj(v: unknown): v is Record<string, any> {
@@ -76,7 +79,14 @@ export function parseBalance(raw: RawBalance): Balance {
   needNumbers(raw.map, 'map', ['width', 'height', 'treeChance', 'rockChance']);
   need((raw.map as any).width >= 32 && (raw.map as any).height >= 16, 'map: минимум 32x16 клеток');
 
+  const squads = raw.squads as Balance['squads'];
+  needNumbers(squads?.weights, 'squads.weights', [...ROLES]);
+  need(ROLES.every(r => squads.weights[r] > 0 && Number.isInteger(squads.weights[r])) && ROLES.reduce((sum, r) => sum + squads.weights[r], 0) === 100, 'squads.weights: положительные целые проценты, сумма 100');
+  const tactics = raw.tactics as Balance['tactics'];
+  needNumbers(tactics, "tactics", ["meleeDetection", "enemyDetection", "rangedRetreatDistance", "rangedSupportDistance", "adjacentSectorRadius", "positionCoverBonus", "positionSeparationBonus", "enemyRoadCost", "flankShare"]);
+  need(Object.values(tactics).every(v => v >= 0) && tactics.enemyRoadCost >= 1 && tactics.flankShare <= 1 && Number.isInteger(tactics.adjacentSectorRadius), "tactics: недопустимые значения");
   return {
+    tactics, squads,
     units: raw.units as Balance['units'],
     items: raw.items as Balance['items'],
     commands,
