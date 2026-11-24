@@ -1,0 +1,26 @@
+{
+  "molotov": {
+    "name": "Коктейль Молотова",
+    "cooldownSec": 20,
+    "maxStack": 3,
+    "params": { "radius": 2.5, "durationSec": 8, "dpsSec": 12, "roadIndex": 6 }
+  },
+  "coffee": {
+    "name": "Кофе",
+    "cooldownSec": 30,
+    "maxStack": 3,
+    "params": { "durationSec": 30, "attackSpeed": 0.1 }
+  },
+  "gun": {
+    "name": "Винтовка (qty = патроны)",
+    "cooldownSec": 5,
+    "maxStack": 5,
+    "params": { "damage": 120 }
+  },
+  "adrenaline": {
+    "name": "Адреналин",
+    "cooldownSec": 25,
+    "maxStack": 2,
+    "params": { "healFraction": 0.3 }
+  }
+}

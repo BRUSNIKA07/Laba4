@@ -1,0 +1,12 @@
+{
+  "maxPeople": 8,
+  "maxDepth": 5,
+  "findChancePerSec": 0.3,
+  "lootBase": { "wood": 6, "stone": 5, "iron": 3, "food": 6 },
+  "goldChance": 0.25,
+  "goldBase": 8,
+  "itemChancePerDepth": 0.015,
+  "itemWeights": { "molotov": 3, "coffee": 4, "gun": 2, "adrenaline": 2 },
+  "deathChancePerDepth": 0.006,
+  "depthLootGrowth": 0.6
+}

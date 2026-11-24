@@ -1,0 +1,13 @@
+{
+  "wavesPerNight": 3,
+  "baseCounts": [3, 5, 8],
+  "countGrowthPerDay": 0.35,
+  "spitterShareBase": 0.2,
+  "spitterSharePerDay": 0.02,
+  "spitterShareMax": 0.5,
+  "spawnIntervalTicks": 8,
+  "waveGapTicks": 150,
+  "firstWaveDelayTicks": 30,
+  "hpPerDay": 0.15,
+  "damagePerDay": 0.08
+}

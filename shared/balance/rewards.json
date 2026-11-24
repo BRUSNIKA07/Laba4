@@ -1,0 +1,12 @@
+[
+  { "id": "gold100",   "text": "+100 золота",                       "effect": { "type": "resources", "gain": { "gold": 100 } } },
+  { "id": "income10",  "text": "+10% добычи на этот день",          "effect": { "type": "incomeBoost", "mult": 0.1 } },
+  { "id": "income25",  "text": "+25% добычи на этот день",          "effect": { "type": "incomeBoost", "mult": 0.25 } },
+  { "id": "cells3",    "text": "+3 клетки для ферм и шахт",         "effect": { "type": "cells", "amount": 3 } },
+  { "id": "slot1",     "text": "+1 слот под турель",                "effect": { "type": "turretSlot", "amount": 1 } },
+  { "id": "housing10", "text": "+10 мест для людей",                "effect": { "type": "housing", "amount": 10 } },
+  { "id": "barracks5", "text": "+5 мест для воинов",                "effect": { "type": "soldierCap", "amount": 5 } },
+  { "id": "people3",   "text": "К вам пришли 3 выживших",           "effect": { "type": "people", "amount": 3 } },
+  { "id": "supplies",  "text": "Припасы: 60 еды, 40 дерева, 30 железа", "effect": { "type": "resources", "gain": { "food": 60, "wood": 40, "iron": 30 } } },
+  { "id": "adrenaline","text": "Находка: адреналин (1 шт.)",        "effect": { "type": "item", "item": "adrenaline", "qty": 1 } }
+]

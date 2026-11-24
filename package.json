@@ -1,0 +1,20 @@
+{
+  "name": "last-outpost",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Оборона Бункера: Постапокалипсис (Last Outpost)",
+  "workspaces": [
+    "shared",
+    "client"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w shared",
+    "test:shared": "npm run test -w shared",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w client",
+    "play": "npm run play -w shared --",
+    "dev": "npm run dev -w client"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
