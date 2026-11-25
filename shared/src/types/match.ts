@@ -47,6 +47,9 @@ export interface GameState {
   phaseTick: number; // тиков в текущей фазе
   players: PlayerInfo[];
   treasury: Resources;
+  pendingIncome: Resources; // дневная добыча, недоступна до рассвета
+  daySortieSeconds: number;
+  dayDrill: number;
   bunker: Bunker;
   map: NightMap;
   roster: SoldierIdentity[]; // постоянный список живых бойцов

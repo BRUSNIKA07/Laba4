@@ -11,6 +11,7 @@ export function sortieSecond(state: GameState, b: Balance): void {
   if (!s) return;
   const cfg = b.sortie;
   s.secondsOut++;
+  state.daySortieSeconds++;
 
   // потери
   if (nextRandom(state) < cfg.deathChancePerDepth * s.depth) {
@@ -42,6 +43,10 @@ export function sortieSecond(state: GameState, b: Balance): void {
     s.items.push({ item, qty: item === 'gun' ? 3 : 1 });
     log(state, `** Вылазка нашла предмет: ${b.items[item].name}`);
   }
+  if (state.daySortieSeconds >= b.economy.sortieSecondsPerDay) {
+    log(state, '!! Суточное время вылазок исчерпано.');
+    sortieHome(state,b,true);
+  }
 }
 
 /** Возвращает группу домой и отдаёт добычу. */
@@ -50,7 +55,7 @@ export function sortieHome(state: GameState, b: Balance, forced = false): void {
   if (!s) return;
   state.bunker.people.outside -= s.people;
   state.bunker.people.scouts += s.people;
-  addResources(state.treasury, s.loot);
+  addResources(state.pendingIncome, s.loot);
   const parts = RESOURCES.filter((r) => s.loot[r]).map((r) => `${s.loot[r]} ${RESOURCE_TITLES[r]}`);
   let converted = 0;
   for (const it of s.items) {
@@ -58,9 +63,9 @@ export function sortieHome(state: GameState, b: Balance, forced = false): void {
     if (left > 0) converted += left; // не влезло — обмениваем на золото
   }
   if (converted > 0) {
-    state.treasury.gold += converted * 15;
+    state.pendingIncome.gold += converted * 15;
     parts.push(`${converted * 15} золота за предметы, которые не влезли`);
   }
-  log(state, `<< Вылазка вернулась${forced ? ' (ночь близко)' : ''}: людей ${s.people}, потеряно ${s.lost}. Добыча: ${parts.join(', ') || 'ничего'}`);
+  log(state, `<< Вылазка вернулась${forced ? ' (автовозврат)' : ''}: людей ${s.people}, потеряно ${s.lost}. Добыча: ${parts.join(', ') || 'ничего'}. Ресурсы доступны после ночи.`);
   state.sortie = null;
 }

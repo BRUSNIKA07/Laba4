@@ -37,6 +37,6 @@ export function scaleCost(cost: ResourceCost, k: number): ResourceCost {
 }
 
 export function formatCost(cost: ResourceCost): string {
-  const parts = RESOURCES.filter((r) => cost[r]).map((r) => `${cost[r]} ${RESOURCE_TITLES[r]}`);
+  const parts = RESOURCES.filter((r) => cost[r]).map((r) => `${Number((cost[r] ?? 0).toFixed(2))} ${RESOURCE_TITLES[r]}`);
   return parts.length ? parts.join(', ') : 'бесплатно';
 }

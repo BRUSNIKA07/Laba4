@@ -31,13 +31,14 @@ export function cfgOf(ctx: CmdCtx, id: string): CommandBalance {
   return cmdBalance(ctx.b, id);
 }
 
-export type PoolRole = 'farmer' | 'commander' | 'warden';
-export const POOL_OF: Record<PoolRole, 'farmers' | 'recruits' | 'scouts'> = {
+export type PoolRole = Role;
+export const POOL_OF: Record<PoolRole, 'farmers' | 'recruits' | 'scouts' | 'builders'> = {
   farmer: 'farmers',
   commander: 'recruits',
   warden: 'scouts',
+  manager: 'builders',
 };
-const POOL_ROLES: PoolRole[] = ['farmer', 'commander', 'warden'];
+const POOL_ROLES: PoolRole[] = ['farmer', 'commander', 'manager', 'warden'];
 
 /**
  * Цель команды send/recall: название роли или имя игрока.
@@ -47,7 +48,7 @@ const POOL_ROLES: PoolRole[] = ['farmer', 'commander', 'warden'];
 export function resolveTarget(state: GameState, token: string): { role: PoolRole } | { error: string } {
   if ((POOL_ROLES as string[]).includes(token)) return { role: token as PoolRole };
   const player = state.players.find((p) => p.name.toLowerCase() === token);
-  if (!player) return { error: `Нет роли или игрока "${token}". Роли: farmer, commander, warden.` };
+  if (!player) return { error: `Нет роли или игрока "${token}". Роли: farmer, commander, manager, warden.` };
   const mine = player.roles.filter((r): r is PoolRole => (POOL_ROLES as Role[]).includes(r));
   if (mine.length === 1) return { role: mine[0]! };
   if (mine.length === 0) return { error: `У игрока ${player.name} нет роли, куда можно отправить людей.` };

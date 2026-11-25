@@ -68,9 +68,13 @@ export function parseBalance(raw: RawBalance): Balance {
 
   const eco = raw.economy as any;
   needNumbers(eco, 'economy', [
-    'tickRate', 'dayTicks', 'cellCount', 'workersPerCell', 'cellLevelBonus', 'foodPerPersonPerDay',
+    'tickRate', 'maxRoomLevel', 'workersPerCellLevelBonus', 'sortieSecondsPerDay', 'drillPerDay', 'quarryIronPerWorker', 'cellCount', 'workersPerCell', 'cellLevelBonus', 'foodPerPersonPerDay',
     'baseHousing', 'baseSoldierCap', 'maxPeople', 'startTurretSlots',
   ]);
+  needNumbers(eco.production, 'economy.production', ['farm', 'lumber', 'quarry', 'mine']);
+  need(Object.values(eco.production).every(v => typeof v === 'number' && v >= 0), 'economy.production: неотрицательные нормы');
+  need(['tickRate','maxRoomLevel','cellCount','workersPerCell','sortieSecondsPerDay','drillPerDay'].every(k => Number.isInteger(eco[k]) && eco[k] > 0), 'economy: целые положительные лимиты');
+  need(Number.isInteger(eco.workersPerCellLevelBonus) && eco.workersPerCellLevelBonus >= 0 && eco.quarryIronPerWorker >= 0, 'economy: неверная прибавка');
   need(eco.startCells.length <= eco.cellCount, 'economy.startCells больше, чем cellCount');
   need(Array.isArray(eco.immigrationPerNight) && eco.immigrationPerNight.length === 2, 'economy.immigrationPerNight');
 

@@ -1,0 +1,14 @@
+[
+  {"id":"farm","title":"ТЕПЛИЦА","x":120,"side":"top","role":"farmer"},
+  {"id":"lumber","title":"ЛЕСОПИЛКА","x":275,"side":"top","role":"farmer"},
+  {"id":"barracks","title":"КАЗАРМА","x":430,"side":"top","role":"commander"},
+  {"id":"oxygen","title":"КИСЛОРОД","x":585,"side":"top","role":"warden"},
+  {"id":"infirmary","title":"ЛАЗАРЕТ","x":740,"side":"top","role":"warden"},
+  {"id":"core","title":"ЯДРО","x":895,"side":"top","role":null},
+  {"id":"quarry","title":"КАМЕНОЛОМНЯ","x":120,"side":"bottom","role":"farmer"},
+  {"id":"housing","title":"ЖИЛОЙ ОТСЕК","x":275,"side":"bottom","role":"manager"},
+  {"id":"generator","title":"ГЕНЕРАТОРНАЯ","x":430,"side":"bottom","role":"warden"},
+  {"id":"water","title":"ВОДООЧИСТКА","x":585,"side":"bottom","role":"warden"},
+  {"id":"sortie","title":"ВЫЛАЗКИ","x":740,"side":"bottom","role":"warden"},
+  {"id":"command","title":"КОМАНДНЫЙ","x":895,"side":"bottom","role":"commander"}
+]

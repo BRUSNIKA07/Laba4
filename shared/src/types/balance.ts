@@ -49,13 +49,17 @@ export interface WavesBalance {
 
 export interface EconomyBalance {
   tickRate: number;
-  dayTicks: number;
+  maxRoomLevel: number;
+  workersPerCellLevelBonus: number;
+  sortieSecondsPerDay: number;
+  drillPerDay: number;
+  quarryIronPerWorker: number;
   startResources: ResourceCost;
   startPeople: { idle: number; farmers: number; melee: number; ranged: number };
   startCells: CellKind[]; // клетки с самого начала, остальные пустые
   cellCount: number;
   workersPerCell: number;
-  production: Record<Exclude<CellKind, 'empty'>, number>; // ресурс/сек на одного рабочего
+  production: Record<Exclude<CellKind, 'empty'>, number>; // ресурс за игровой день на одного рабочего
   cellLevelBonus: number;
   foodPerPersonPerDay: number;
   baseHousing: number;

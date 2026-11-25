@@ -10,6 +10,7 @@ export const sortieGo: Handler = (ctx, args) => {
   const { state, b } = ctx;
   const n = Number(args['n']);
   if (n < 1) return fail('Укажите число больше нуля.');
+  if (state.daySortieSeconds >= b.economy.sortieSecondsPerDay) return fail('Суточный лимит вылазок исчерпан.');
   if (state.sortie) return fail('Группа уже снаружи. Верните её: sortie home.');
   const max = b.sortie.maxPeople;
   if (n > max) return fail(`В одной вылазке не больше ${max} человек.`);

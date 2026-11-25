@@ -17,7 +17,14 @@ export interface Cell {
 }
 
 /** Где сейчас находятся люди. Солдаты считаются отдельно (army). */
+export type ProductionRoom = 'farm' | 'lumber' | 'quarry';
+export const PRODUCTION_ROOMS = ['farm', 'lumber', 'quarry'] as const;
+export function productionRoom(kind: CellKind): ProductionRoom | null {
+  return kind === 'empty' ? null : kind === 'mine' ? 'quarry' : kind;
+}
+
 export interface People {
+  builders: number; // закреплены за manager, пока отдыхают
   idle: number; // свободны в бункере
   farmers: number; // работают на клетках фермера
   recruits: number; // новобранцы у командира
@@ -50,6 +57,9 @@ export interface Structure {
 
 export interface Bunker {
   cells: Cell[];
+  workerTargets: Partial<Record<ProductionRoom, number>>;
+  housingLevel: number;
+  barracksLevel: number;
   people: People;
   army: Army;
   housing: number; // сколько людей вмещает бункер
@@ -62,5 +72,5 @@ export interface Bunker {
 
 export function totalPeople(b: Bunker): number {
   const p = b.people;
-  return p.idle + p.farmers + p.recruits + p.scouts + p.outside + b.army.melee + b.army.ranged;
+  return p.idle + p.builders + p.farmers + p.recruits + p.scouts + p.outside + b.army.melee + b.army.ranged;
 }

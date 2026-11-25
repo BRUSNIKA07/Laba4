@@ -25,7 +25,7 @@ export function applyReward(state: GameState, b: Balance, r: RewardDef): void {
     case 'housing': bk.housing += e.amount; break;
     case 'soldierCap': bk.soldierCap += e.amount; break;
     case 'cells':
-      for (let i = 0; i < e.amount; i++) bk.cells.push({ kind: 'empty', level: 1 });
+      for (let i = 0; i < e.amount && bk.cells.length < b.economy.cellCount; i++) bk.cells.push({ kind: 'empty', level: 1 });
       break;
     case 'turretSlot': bk.turretSlots = Math.min(state.map.turretSlots.length, bk.turretSlots + e.amount); break;
     case 'people': {

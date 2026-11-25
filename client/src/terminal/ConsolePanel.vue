@@ -43,6 +43,7 @@ function onKey(e: KeyboardEvent): void {
 
 function pick(text: string): void {
   input.value = text;
+  g.legendOpen = false;
   inEl.value?.focus();
 }
 

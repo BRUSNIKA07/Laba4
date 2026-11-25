@@ -38,8 +38,8 @@ export function createGame(b: Balance, opts: NewGameOptions): GameState {
 
   const sp = eco.startPeople;
   const bunker: Bunker = {
-    cells,
-    people: { idle: sp.idle, farmers: sp.farmers, recruits: 0, scouts: 0, outside: 0 },
+    cells, workerTargets: {}, housingLevel: 1, barracksLevel: 1,
+    people: { builders: 0, idle: sp.idle, farmers: sp.farmers, recruits: 0, scouts: 0, outside: 0 },
     army: { melee: sp.melee, ranged: sp.ranged, drill: 0, damageBonus: 0, healthBonus: 0, damageUpgrades: 0, healthUpgrades: 0 },
     housing: eco.baseHousing,
     soldierCap: eco.baseSoldierCap,
@@ -63,7 +63,7 @@ export function createGame(b: Balance, opts: NewGameOptions): GameState {
     phase: 'day',
     phaseTick: 0,
     players: opts.players.map((p) => ({ ...p, roles: [...p.roles] })),
-    treasury,
+    treasury, pendingIncome: emptyResources(), daySortieSeconds: 0, dayDrill: 0,
     bunker,
     map,
     roster: [],

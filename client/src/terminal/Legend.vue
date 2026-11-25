@@ -23,7 +23,7 @@ function head(usage: string): string {
 
 <template>
   <aside class="legend">
-    <header>ЛЕГЕНДА <span class="dim small">нажмите на команду</span></header>
+    <header>ЛЕГЕНДА <button class="btn small" @click.stop="g.legendOpen=false">×</button> <span class="dim small">нажмите на команду</span></header>
     <div class="legend-body">
       <section><h4>ОТОБРАЖЕНИЕ</h4>
         <button class="entry" @click="emit('pick', 'grid on')"><span class="usage">grid on</span><span class="desc">Показать сетку A1–H8</span></button>

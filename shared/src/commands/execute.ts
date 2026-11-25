@@ -18,6 +18,7 @@ const HANDLERS: Record<string, Handler> = {
   'vote.end': info.voteEnd, reward: info.reward,
   drill: cmd.drill, 'train.melee': cmd.trainMelee, 'train.ranged': cmd.trainRanged,
   'upgrade.damage': cmd.upgradeDamage, 'upgrade.health': cmd.upgradeHealth, cheer: cmd.cheer, focus: cmd.focus,
+  'workers.assign': farm.assignWorkers, 'workers.auto': farm.autoWorkers,
   'cell.build': farm.cellBuild, 'cell.upgrade': farm.cellUpgrade, heal: farm.heal,
   send: mgr.send, recall: mgr.recall,
   'build.barracks': mgr.buildBarracks, 'build.housing': mgr.buildHousing, 'build.farmroom': mgr.buildFarmroom,

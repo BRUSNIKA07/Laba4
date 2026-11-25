@@ -31,23 +31,20 @@ export const recall: Handler = ({ state }, args) => {
 
 function simpleBuild(field: 'soldierCap' | 'housing', param_: string, text: string): Handler {
   return (ctx) => {
+    const level = field === 'housing' ? 'housingLevel' : 'barracksLevel';
+    if (ctx.state.bunker[level] >= ctx.b.economy.maxRoomLevel) return fail('Помещение максимального уровня.');
     const err = tryPay(ctx, ctx.cfg.cost);
     if (err) return fail(err);
     const add = param(ctx.cfg, param_);
     ctx.state.bunker[field] += add;
+    ctx.state.bunker[level]++;
     return done(`${text} (+${add}). Теперь: ${ctx.state.bunker[field]}.`);
   };
 }
 export const buildBarracks = simpleBuild('soldierCap', 'soldierCap', 'Казарма построена: мест для солдат');
 export const buildHousing = simpleBuild('housing', 'peopleCap', 'Жилой блок построен: мест для людей');
 
-export const buildFarmroom: Handler = (ctx) => {
-  const err = tryPay(ctx, ctx.cfg.cost);
-  if (err) return fail(err);
-  const n = param(ctx.cfg, 'cells');
-  for (let i = 0; i < n; i++) ctx.state.bunker.cells.push({ kind: 'empty', level: 1 });
-  return done(`Новый отсек: +${n} клеток (всего ${ctx.state.bunker.cells.length}). Фермер, стройте.`);
-};
+export const buildFarmroom: Handler = () => fail('Девять общих модулей уже предусмотрены. Новые комнаты строить можно будет на этапе строительства.');
 
 function freeSlot(used: Set<number>, limit: number): number {
   for (let i = 0; i < limit; i++) if (!used.has(i)) return i;
@@ -120,6 +117,7 @@ export const repairOne: Handler = (ctx, args) => {
 export const upgradeGate: Handler = (ctx) => {
   const gate = ctx.state.bunker.structures.find((s) => s.kind === 'gate');
   if (!gate) return fail('Ворот нет.');
+  if (gate.level >= ctx.b.economy.maxRoomLevel) return fail('Шлюз максимального уровня.');
   const err = tryPay(ctx, scaleCost(ctx.cfg.cost, gate.level));
   if (err) return fail(err);
   const add = param(ctx.cfg, 'hpBonus');

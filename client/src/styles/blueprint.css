@@ -1,0 +1,44 @@
+/* Stage 3c.1 — amber engineering terminal */
+.day-screen{height:100%;min-height:0;display:flex;flex-direction:column;gap:9px;font-size:15px}
+.day-header{border:1px solid var(--fg-faint);padding:8px 10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.day-readouts{display:flex;flex-wrap:wrap;gap:5px 20px;align-items:center}
+.day-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(235px,30%);min-height:0;flex:1;gap:10px}
+.blueprint-wrap{min-width:0;min-height:0;display:flex;flex-direction:column;border:1px solid var(--fg-faint);background:#080705;text-shadow:none}
+.blueprint-tools{padding:5px 8px;display:flex;justify-content:space-between;align-items:center;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--fg-faint);font-size:14px}
+.blueprint-map{position:relative;min-height:0;flex:1;overflow:hidden}
+.blueprint-svg{width:100%;height:100%;display:block;touch-action:none;user-select:none;cursor:grab}
+.blueprint-svg.dragging{cursor:grabbing}
+.blueprint-room{cursor:pointer;outline:none}
+.room-outline{stroke:#d4a357;stroke-width:1.4}
+.room-floor{fill:#14100a;stroke:#875d30;stroke-width:.7}
+.blueprint-room.selected .room-outline,.blueprint-room:focus .room-outline{stroke:#ffe5a9;stroke-width:2.3}
+.blueprint-room.selected .room-floor{fill:#241a0e}
+.blueprint-room.unbuilt .room-outline{stroke:#795f39;stroke-dasharray:6 5}
+.blueprint-room.unbuilt .room-title,.blueprint-room.unbuilt .room-meta{fill:#96784c}
+.room-title,.room-meta,.room-subtitle,.corridor-title,.plan-mark{font-family:Consolas,'Courier New',monospace;pointer-events:none;text-shadow:none}
+.room-title{fill:#ffd18a;font-size:11px;font-weight:600}
+.room-meta{fill:#ba965d;font-size:10px}
+.room-subtitle{fill:#cda565;font-size:8px}
+.room-door{fill:none;stroke:#d4a357;stroke-width:1.5}
+.corridor{fill:#171006;stroke:#a97a3f;stroke-width:1.5}
+.corridor-title{fill:#9b7949;font-size:13px}
+.plan-mark{fill:#8b7047;font-size:10px}
+.resident-light{filter:drop-shadow(0 0 2.5px currentColor);animation:resident-drift 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes resident-drift{0%,100%{transform:translate(-1px,0);opacity:.88}40%{transform:translate(1.5px,2px);opacity:1}75%{transform:translate(0,-1px);opacity:.92}}
+.blueprint-warning{color:#ff8663}
+.blueprint-room.problem .room-outline{stroke:#ff795d;animation:room-alert 1.8s ease-in-out infinite}
+@keyframes room-alert{50%{stroke-opacity:.3}}
+.blueprint-key{display:flex;gap:8px 14px;flex-wrap:wrap;padding:7px 9px;border-top:1px solid var(--fg-faint);font-size:12px;color:var(--fg-dim)}
+.blueprint-key span{display:flex;gap:5px;align-items:center}.blueprint-key i{display:inline-block;width:7px;height:7px;border-radius:50%;box-shadow:0 0 5px currentColor}
+.day-console{min-height:0;min-width:0;font-size:15px}
+.day-console .console-bar{font-size:11px;gap:3px;flex-wrap:wrap;padding:4px}
+.day-console .console-bar .btn{font-size:11px;margin:0}
+.day-console .console-out{font-size:14px}
+.day-console .console-in{padding:5px 7px;font-size:14px}
+.day-console .console.compact .legend.overlay{width:100%;max-width:360px}
+.room-details{position:absolute;right:9px;top:9px;max-height:calc(100% - 18px);width:min(335px,calc(100% - 18px));overflow:auto;background:#100b05;border:1px solid var(--fg);box-shadow:0 5px 20px #000b;padding:10px 12px;z-index:2;font-size:14px;color:var(--fg)}
+.room-details header{display:flex;align-items:center;justify-content:space-between;gap:6px;border-bottom:1px solid var(--fg-faint);padding-bottom:5px;margin-bottom:6px}
+.room-details h4{font-size:13px;font-weight:normal;border-bottom:1px dashed var(--fg-faint);margin:12px 0 6px}
+.room-data{margin:6px 0;padding-left:16px;line-height:1.4}.room-action{padding:4px 0;border-bottom:1px solid var(--fg-faint)}.room-action code{white-space:normal;overflow-wrap:anywhere;color:#ffe0a8;font-size:13px}
+@media(max-width:800px){.day-main{grid-template-columns:minmax(0,1fr) minmax(190px,34%)}.day-header{padding:5px}.day-readouts{gap:4px 8px}.blueprint-tools{font-size:11px}.blueprint-tools .dim{display:none}.tab{font-size:16px;padding:3px 6px;letter-spacing:0}.status{font-size:13px;flex-wrap:wrap}.status .cell{padding:2px 6px}.pip{padding:12px 10px}}
+@media(prefers-reduced-motion:reduce){.resident-light,.blueprint-room.problem .room-outline,.crt::after{animation:none}}

@@ -8,6 +8,8 @@ export const drill: Handler = ({ state, b, cfg }) => {
   const army = state.bunker.army;
   const per = param(cfg, 'perLevel');
   const before = armyLevel(state, b);
+  if (state.dayDrill >= b.economy.drillPerDay) return fail('Суточный лимит муштры исчерпан.');
+  state.dayDrill++;
   army.drill++;
   const after = armyLevel(state, b);
   if (after > before) return done(`*** Уровень армии: ${after}! Бойцы стали сильнее.`);

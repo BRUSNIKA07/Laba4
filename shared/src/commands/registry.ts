@@ -29,16 +29,18 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'focus', patterns: ['focus <kind:melee|ranged>'], usage: 'focus <melee|ranged>', description: 'Приказ: бить в первую очередь ближников или стрелков врага', roles: ['commander'], phase: 'night' },
 
   // ---------- фермер
+  { id: 'workers.assign', patterns: ['assign <n:int> workers to <room:farm|lumber|quarry>'], usage: 'assign <n> workers to <farm|lumber|quarry>', description: 'Назначить работников farmer в конкретный отсек (0 — не работать)', roles: ['farmer'], phase: 'day' },
+  { id: 'workers.auto', patterns: ['assign auto'], usage: 'assign auto', description: 'Сбросить ручные назначения', roles: ['farmer'], phase: 'day' },
   { id: 'cell.build', patterns: ['build <kind:farm|lumber|quarry|mine> <cell:int>'], usage: 'build <farm|lumber|quarry|mine> <клетка>', description: 'Построить ферму, лесопилку, каменоломню или шахту в клетке', roles: ['farmer'], phase: 'day' },
   { id: 'cell.upgrade', patterns: ['upgrade cell <cell:int>'], usage: 'upgrade cell <клетка>', description: 'Улучшить постройку в клетке', roles: ['farmer'], phase: 'day' },
   { id: 'heal', patterns: ['heal'], usage: 'heal', description: 'Вылечить самого раненого солдата (тратит еду)', roles: ['farmer'], phase: 'night' },
 
   // ---------- менеджер
-  { id: 'send', patterns: ['send <n:int> people to <target:word>'], usage: 'send <n> people to <роль|игрок>', description: 'Отправить свободных людей к фермеру, командиру или смотрителю', roles: ['manager'], phase: 'day' },
+  { id: 'send', patterns: ['send <n:int> people to <target:word>'], usage: 'send <n> people to <роль|игрок>', description: 'Отправить свободных людей к выбранной роли (включая manager)', roles: ['manager'], phase: 'day' },
   { id: 'recall', patterns: ['recall <n:int> people from <target:word>'], usage: 'recall <n> people from <роль|игрок>', description: 'Вернуть людей обратно в свободные', roles: ['manager'], phase: 'day' },
   { id: 'build.barracks', patterns: ['build barracks'], usage: 'build barracks', description: 'Казарма: больше мест для солдат', roles: ['manager'], phase: 'day' },
   { id: 'build.housing', patterns: ['build housing'], usage: 'build housing', description: 'Жилой блок: больше мест для людей', roles: ['manager'], phase: 'day' },
-  { id: 'build.farmroom', patterns: ['build farmroom'], usage: 'build farmroom', description: 'Новый отсек: больше клеток для фермера', roles: ['manager'], phase: 'day' },
+  { id: 'build.farmroom', patterns: ['build farmroom'], usage: 'build farmroom', description: 'Девять общих модулей (расширение отключено)', roles: ['manager'], phase: 'day' },
   { id: 'build.turret', patterns: ['build turret [<type:basic|rapid|heavy>]'], usage: 'build turret [basic|rapid|heavy]', description: 'Построить турель в свободном слоте', roles: ['manager'], phase: 'day' },
   { id: 'build.wall', patterns: ['build wall'], usage: 'build wall', description: 'Баррикада на дороге перед воротами', roles: ['manager'], phase: 'day' },
   { id: 'expand.defense', patterns: ['expand defense'], usage: 'expand defense', description: 'Открыть ещё один слот под турель', roles: ['manager'], phase: 'day' },

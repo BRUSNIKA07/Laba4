@@ -6,7 +6,7 @@
   "spitterSharePerDay": 0.02,
   "spitterShareMax": 0.5,
   "spawnIntervalTicks": 8,
-  "waveGapTicks": 150,
+  "waveGapTicks": 100,
   "firstWaveDelayTicks": 30,
   "hpPerDay": 0.15,
   "damagePerDay": 0.08

@@ -34,3 +34,5 @@ export { renderAscii, ASCII_LEGEND } from './game/ascii';
 
 export * from './game/squads';
 export * from './game/sectors';
+
+export * from './game/economy';

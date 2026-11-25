@@ -54,18 +54,15 @@ function computePath(state: GameState, b: Balance, from: Vec, flank=false): Vec[
 function planWaves(state: GameState, b: Balance): { spawns: WaveSpawn[]; starts: number[] } {
   const w = b.waves;
   const spawns: WaveSpawn[] = [];
-  const starts: number[] = [];
-  let t = w.firstWaveDelayTicks;
+  const starts: number[] = [w.firstWaveDelayTicks];
   const day = state.day;
   for (let i = 0; i < w.wavesPerNight; i++) {
     const count = Math.max(1, Math.round(w.baseCounts[i]! * (1 + w.countGrowthPerDay * (day - 1))));
     const share = Math.min(w.spitterShareMax, w.spitterShareBase + w.spitterSharePerDay * (day - 1));
-    starts.push(t);
     for (let k = 0; k < count; k++) {
       const kind: EnemyKind = nextRandom(state) < share ? 'spitter' : 'grunt';
-      spawns.push({ atTick: t + k * w.spawnIntervalTicks, kind });
+      spawns.push({ wave: i + 1, atTick: k * w.spawnIntervalTicks, kind });
     }
-    t += count * w.spawnIntervalTicks + w.waveGapTicks;
   }
   return { spawns, starts };
 }
@@ -96,7 +93,7 @@ export function startNight(state: GameState, b: Balance): void {
   const { spawns, starts } = planWaves(state, b);
   const night: NightState = {
     tick: 0, enemies: [], soldiers, fires: [], spawns, totalEnemies: spawns.length,
-    waveStarts: starts, waveAnnounced: 0, nextId: id,
+    waveStarts: starts, waveAnnounced: 0, totalWaves: b.waves.wavesPerNight, nextId: id,
     pathVersion: 1, cheerUntil: 0, coffeeUntil: 0, focusUntil: 0, focus: null,
     stats: { kills: 0, soldiersLost: 0, loot: {} },
   };
@@ -170,18 +167,18 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
   if (!night) return 'cleared';
   const t = night.tick;
 
-  // --- объявления волн
-  while (night.waveAnnounced < night.waveStarts.length && night.waveStarts[night.waveAnnounced]! <= t) {
-    const w = night.waveAnnounced;
-    const next = night.waveStarts[w + 1] ?? Infinity;
-    const n = night.spawns.filter((s) => s.atTick >= night.waveStarts[w]! && s.atTick < next).length;
-    log(state, `>> Волна ${w + 1} из ${night.waveStarts.length}: врагов ${n}`);
-    emit(state, { t: 'wave', wave: w + 1, total: night.waveStarts.length, enemies: n });
-    night.waveAnnounced++;
+  // Следующая волна получает время старта только после зачистки предыдущей.
+  const scheduled = night.waveStarts[night.waveAnnounced];
+  if (scheduled !== undefined && scheduled <= t && night.spawns.length > 0) {
+    const wave = ++night.waveAnnounced;
+    const n = night.spawns.filter(s => s.wave === wave).length;
+    log(state, `>> Волна ${wave} из ${night.totalWaves}: врагов ${n}`);
+    emit(state, { t: 'wave', wave, total: night.totalWaves, enemies: n });
   }
-
-  // --- появление врагов
-  while (night.spawns.length > 0 && night.spawns[0]!.atTick <= t) {
+  const startedAt = night.waveStarts[night.waveAnnounced - 1];
+  while (startedAt !== undefined && night.spawns.length > 0 &&
+         night.spawns[0]!.wave === night.waveAnnounced &&
+         startedAt + night.spawns[0]!.atTick <= t) {
     spawnEnemy(state, b, night, night.spawns.shift()!.kind);
   }
 
@@ -356,7 +353,15 @@ export function tickNight(state: GameState, b: Balance): NightOutcome {
 
   const gate = state.bunker.structures.find((s) => s.kind === 'gate');
   if (!gate || gate.hp <= 0) return 'breach';
-  if (night.spawns.length === 0 && night.enemies.length === 0) return 'cleared';
+  if (night.enemies.length === 0) {
+    if (night.spawns.length === 0) return 'cleared';
+    // Пустая карта между появлениями врагов одной волны ещё не означает победу.
+    if (night.waveAnnounced > 0 && night.spawns[0]!.wave > night.waveAnnounced &&
+        night.waveStarts.length === night.waveAnnounced) {
+      night.waveStarts.push(night.tick + b.waves.waveGapTicks);
+      log(state, `>> Волна ${night.waveAnnounced} отбита. Следующая через ${b.waves.waveGapTicks / b.economy.tickRate} с.`);
+    }
+  }
   return 'ongoing';
 }
 

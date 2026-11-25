@@ -25,7 +25,7 @@ export const useGameStore = defineStore('game', () => {
   const chat = ref<ChatMsg[]>([]);
   const history = ref<string[]>([]);
   const tab = ref<TabId>('bunker');
-  const legendOpen = ref(true);
+  const legendOpen = ref(false);
   const speed = ref(1);
   const gridVisible = ref(true);
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -98,7 +98,8 @@ export const useGameStore = defineStore('game', () => {
     state.value = s.state;
     tab.value = 'bunker';
     gridVisible.value = true;
-    push('sys', 'ТЕРМИНАЛ БУНКЕРА v0.3. Введите help или откройте легенду справа.');
+    legendOpen.value = false;
+    push('sys', 'ТЕРМИНАЛ БУНКЕРА v0.3c.1. Введите help или откройте легенду справа.');
     say('СИСТЕМА', 'Чат отряда. Строка, начинающаяся с «/», выполняется как команда: /vote end, /reward 1.');
     handleEvents(s.flush());
     timer = setInterval(loop, 100);

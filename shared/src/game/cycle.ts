@@ -1,8 +1,8 @@
 import type { Balance } from '../types/balance';
 import type { GameState } from '../types/match';
 import { totalPeople } from '../types/bunker';
-import { formatCost } from '../types/resources';
-import { consumeFood, produceOneSecond } from './economy';
+import { addResources, emptyResources, formatCost } from '../types/resources';
+import { consumeFood, dailyProduction } from './economy';
 import { emit, log } from './log';
 import { startNight, tickNight } from './night';
 import { randInt } from './rng';
@@ -33,6 +33,9 @@ function beginNight(state: GameState, b: Balance): void {
     log(state, 'Награда не выбрана — взят вариант 1.');
     chooseReward(state, b, 1);
   }
+  const income = dailyProduction(state, b);
+  addResources(state.pendingIncome, income);
+  log(state, `-- Добыча за день: ${formatCost(income)}. Доступна после ночи.`);
   const food = consumeFood(state, b);
   log(state, `-- Итоги дня ${state.day}: съедено еды ${Number(food.eaten.toFixed(2))}, погибло от голода ${food.starved}.`);
   state.bunker.incomeBoost = 0;
@@ -61,6 +64,10 @@ function endNight(state: GameState, b: Balance): void {
     loot: { ...n.stats.loot },
     newcomers,
   };
+  addResources(state.treasury, state.pendingIncome);
+  log(state, `-- Поступление дневной добычи: ${formatCost(state.pendingIncome)}.`);
+  state.pendingIncome = emptyResources();
+  state.daySortieSeconds = 0; state.dayDrill = 0;
   state.night = null;
   state.day++;
   state.phase = 'day';
@@ -85,7 +92,6 @@ export function step(state: GameState, b: Balance): void {
 
   if (state.phase === 'day') {
     if (state.phaseTick % b.economy.tickRate === 0) {
-      produceOneSecond(state, b);
       sortieSecond(state, b);
     }
     if (state.rewardOffer) {
@@ -93,7 +99,7 @@ export function step(state: GameState, b: Balance): void {
       if (win !== null) chooseReward(state, b, win);
     }
     const voted = !state.rewardOffer && endDayVoteReached(state);
-    if (voted || state.phaseTick >= b.economy.dayTicks) beginNight(state, b);
+    if (voted) beginNight(state, b);
     return;
   }
 

@@ -14,7 +14,10 @@ const info = () => {
   const n = g.need().night;
   if (!n) return '';
   const gate = g.need().bunker.structures.find((s) => s.kind === 'gate');
-  return `ВРАГОВ ${n.enemies.length} (ЕЩЁ ${n.spawns.length}) · СОЛДАТ ${n.soldiers.length} · ВОРОТА ${Math.round(gate?.hp ?? 0)}/${gate?.maxHp ?? 0}`;
+  const next = n.waveStarts[n.waveAnnounced];
+  const rate = g.session?.b.economy.tickRate ?? 10;
+  const wave = next === undefined ? `ВОЛНА ${n.waveAnnounced}/${n.totalWaves}` : `ВОЛНА ${n.waveAnnounced + 1}/${n.totalWaves} ЧЕРЕЗ ${Math.max(0, Math.ceil((next - n.tick) / rate))} С`;
+  return `${wave} · ВРАГОВ ${n.enemies.length} (ЕЩЁ ${n.spawns.length}) · СОЛДАТ ${n.soldiers.length} · ВОРОТА ${Math.round(gate?.hp ?? 0)}/${gate?.maxHp ?? 0}`;
 };
 const ascii = () => renderAscii(g.need());
 

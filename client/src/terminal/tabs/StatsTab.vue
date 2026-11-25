@@ -30,6 +30,7 @@ const level = () => armyLevel(st(), g.session!.b);
     <section>
       <h3>ЛЮДИ</h3>
       <div class="row"><span>свободные</span><b>{{ st().bunker.people.idle }}</b></div>
+      <div class="row"><span>строители</span><b>{{ st().bunker.people.builders }}</b></div>
       <div class="row"><span>фермеры</span><b>{{ st().bunker.people.farmers }}</b></div>
       <div class="row"><span>новобранцы</span><b>{{ st().bunker.people.recruits }}</b></div>
       <div class="row"><span>резерв смотрителя</span><b>{{ st().bunker.people.scouts }}</b></div>

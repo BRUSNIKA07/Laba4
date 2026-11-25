@@ -1,22 +1,57 @@
 {
   "tickRate": 10,
-  "dayTicks": 1200,
-  "startResources": { "wood": 80, "stone": 50, "iron": 30, "food": 100, "gold": 0 },
-  "startPeople": { "idle": 8, "farmers": 3, "melee": 2, "ranged": 2 },
-  "startCells": ["farm", "lumber"],
+  "startResources": {
+    "wood": 80,
+    "stone": 50,
+    "iron": 30,
+    "food": 100,
+    "gold": 0
+  },
+  "startPeople": {
+    "idle": 8,
+    "farmers": 3,
+    "melee": 2,
+    "ranged": 2
+  },
+  "startCells": [
+    "farm",
+    "lumber",
+    "quarry"
+  ],
   "cellCount": 9,
   "workersPerCell": 3,
-  "production": { "farm": 0.2, "lumber": 0.15, "quarry": 0.12, "mine": 0.08 },
+  "production": {
+    "farm": 24.0,
+    "lumber": 18.0,
+    "quarry": 14.4,
+    "mine": 9.6
+  },
   "cellLevelBonus": 0.25,
   "foodPerPersonPerDay": 6,
   "baseHousing": 20,
   "baseSoldierCap": 10,
   "maxPeople": 50,
-  "immigrationPerNight": [1, 4],
+  "immigrationPerNight": [
+    1,
+    4
+  ],
   "startTurretSlots": 2,
-  "startTurrets": ["basic"],
+  "startTurrets": [
+    "basic"
+  ],
   "startInventory": [
-    { "item": "molotov", "qty": 1 },
-    { "item": "coffee", "qty": 1 }
-  ]
+    {
+      "item": "molotov",
+      "qty": 1
+    },
+    {
+      "item": "coffee",
+      "qty": 1
+    }
+  ],
+  "workersPerCellLevelBonus": 1,
+  "maxRoomLevel": 3,
+  "sortieSecondsPerDay": 120,
+  "drillPerDay": 400,
+  "quarryIronPerWorker": 9.6
 }

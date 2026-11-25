@@ -67,7 +67,8 @@ export interface FireZone {
 }
 
 export interface WaveSpawn {
-  atTick: number; // тик ночи, когда появляется враг
+  wave: number; // номер волны, начиная с 1
+  atTick: number; // смещение от начала этой волны
   kind: EnemyKind;
 }
 
@@ -82,10 +83,11 @@ export interface NightState {
   enemies: Enemy[];
   soldiers: Soldier[];
   fires: FireZone[];
-  spawns: WaveSpawn[]; // очередь появления, отсортирована по atTick
+  spawns: WaveSpawn[]; // очередь появления, отсортирована по волне и смещению
   totalEnemies: number;
-  waveStarts: number[]; // тики начала волн (для сообщений)
+  waveStarts: number[]; // тики начала уже запланированных волн
   waveAnnounced: number;
+  totalWaves: number;
   nextId: number;
   pathVersion: number; // растёт, когда меняется проходимость (баррикада разрушена)
   cheerUntil: number; // тик ночи

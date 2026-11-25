@@ -1,3 +1,5 @@
+import { cellCapacity, dailyProduction, workerAllocation } from '../../game/economy';
+import { formatCost } from '../../types/resources';
 import { armyLevel } from '../../game/army';
 import { majority } from '../../game/vote';
 import { rewardById } from '../../game/rewards';
@@ -27,14 +29,15 @@ export const status: Handler = ({ state, b }) => {
   const bk = state.bunker;
   const t = state.treasury;
   const lines: string[] = [];
-  const left = Math.max(0, b.economy.dayTicks - state.phaseTick);
   lines.push(
     state.phase === 'day'
-      ? `День ${state.day} | до ночи ${Math.ceil(left / b.economy.tickRate)} с | голосов за конец дня ${Object.keys(state.votes.endDay).length}/${majority(state.players.length)}`
+      ? `День ${state.day} | без таймера | голосов за конец дня ${Object.keys(state.votes.endDay).length}/${majority(state.players.length)}`
       : state.phase === 'night'
         ? `Ночь ${state.day} | врагов на карте ${state.night?.enemies.length ?? 0}, ещё придёт ${state.night?.spawns.length ?? 0}`
         : `Игра окончена: ${state.gameOverReason ?? ''}`,
   );
+  if (state.phase === 'day') lines.push('Прогноз на день: ' + formatCost(dailyProduction(state,b)));
+  lines.push('Ожидают рассвета: ' + formatCost(state.pendingIncome));
   lines.push('Ресурсы: ' + RESOURCES.map((r) => `${RESOURCE_TITLES[r]} ${Math.floor(t[r])}`).join(', '));
   lines.push(`Людей: ${totalPeople(bk)}/${Math.min(bk.housing, b.economy.maxPeople)}, солдат: ${bk.army.melee + bk.army.ranged}/${bk.soldierCap} (ближников ${bk.army.melee}, стрелков ${bk.army.ranged}), уровень армии ${armyLevel(state, b)}`);
   const st = bk.structures.map((s) => `${s.id}${s.turret ? `(${s.turret})` : ''} ${Math.round(s.hp)}/${s.maxHp}`);
@@ -51,6 +54,7 @@ export const people: Handler = ({ state }) => {
   const a = state.bunker.army;
   return done(
     `Свободные: ${p.idle}`,
+    `Строители: ${p.builders}`,
     `Работают у фермера: ${p.farmers}`,
     `Новобранцы у командира: ${p.recruits}`,
     `Резерв смотрителя: ${p.scouts}, на вылазке: ${p.outside}`,
@@ -59,12 +63,11 @@ export const people: Handler = ({ state }) => {
 };
 
 export const cells: Handler = ({ state, b }) => {
-  let workers = state.bunker.people.farmers;
+  const workers = workerAllocation(state,b);
   const lines = state.bunker.cells.map((c, i) => {
     if (c.kind === 'empty') return `${i + 1}) пусто`;
-    const w = Math.min(b.economy.workersPerCell, workers);
-    workers -= w;
-    return `${i + 1}) ${c.kind} ур.${c.level} -> ${RESOURCE_TITLES[CELL_PRODUCES[c.kind]]}, рабочих ${w}/${b.economy.workersPerCell}`;
+    const w = workers[i] ?? 0;
+    return `${i + 1}) ${c.kind} ур.${c.level} -> ${RESOURCE_TITLES[CELL_PRODUCES[c.kind]]}${c.kind === 'quarry' ? ' + железо' : ''}, рабочих ${w}/${cellCapacity(c,b)}`;
   });
   return done(...lines);
 };
