@@ -1,3 +1,4 @@
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkRegistry, drainEvents, executeCommand, step, totalPeople, type GameState } from '../src';
@@ -28,9 +29,7 @@ test('send по имени игрока: у одного игрока две р�
   const { s, b } = newGame(DUO);
   const amb = run(s, b, 'b', 'send 1 people to anna'); // у Анны командир и фермер
   assert.ok(!amb.ok && /несколько ролей/i.test(amb.lines[0]!));
-  const ambB = run(s,b,'b','send 1 people to boris'); // теперь и manager имеет собственный резерв
-  assert.ok(!ambB.ok && /несколько ролей/i.test(ambB.lines[0]!));
-  const single = run(s, b, 'b', 'send 1 people to warden');
+  const single = run(s, b, 'b', 'send 1 people to boris'); // у Бориса из «получателей» только warden
   assert.ok(single.ok, single.lines.join(' '));
   assert.equal(s.bunker.people.scouts, 1);
   const quad = newGame(QUAD);
@@ -90,25 +89,16 @@ test('вылазка: уходит, приносит добычу, к ночи �
   run(s, b, 'p1', 'send 4 people to warden');
   assert.ok(run(s, b, 'p1', 'sortie 4').ok);
   assert.equal(s.bunker.people.outside, 4);
-  assert.ok(run(s,b,'p1','vote end').ok);
-  step(s,b);
+  for (let i = 0; i < b.economy.dayTicks + 5; i++) step(s, b);
   assert.equal(s.sortie, null);
   assert.equal(s.bunker.people.outside, 0);
 });
 
-test('экономика: фермеры дают еду только после пережитой ночи', () => {
+test('экономика: фермеры дают еду', () => {
   const { s, b } = newGame();
   const before = s.treasury.food;
-  for (let i = 0; i < 5000; i++) step(s, b);
-  assert.equal(s.treasury.food,before);
-  assert.equal(s.phase,'day');
-  run(s,b,'p1','vote end'); step(s,b);
-  const afterFood=s.treasury.food;
-  assert.ok(s.pendingIncome.food>0);
-  const pending=s.pendingIncome.food;
-  s.night!.spawns=[]; s.night!.enemies=[]; step(s,b);
-  assert.equal(s.treasury.food,afterFood+pending);
-  assert.equal(s.pendingIncome.food,0);
+  for (let i = 0; i < 100; i++) step(s, b);
+  assert.ok(s.treasury.food > before);
 });
 
 /** Простой «автоигрок»: готовит оборону, проходит ночь с командами. */
@@ -118,14 +108,14 @@ function autoplay(seed: number, days: number) {
   me('send 4 people to commander');
   me('train melee 2');
   me('train ranged 2');
-  me('build quarry 6');
+  me('build quarry 3');
   me('build mine 4');
   me('build farm 5');
   me('send 3 people to farmer');
   let guard = 0;
   while (s.phase !== 'gameover' && s.day <= days && guard++ < 400000) {
     if (s.phase === 'day' && s.phaseTick === 5) {
-      if (s.rewardOffer) { me('reward 1'); step(s,b); }
+      if (s.rewardOffer) me('reward 1');
       me('build turret'); me('build wall'); me('repair gates'); me('repair all turrets');
       me('train melee 1'); me('send 2 people to commander');
       me('vote end');
