@@ -1,4 +1,41 @@
-node_modules
-dist
-*.log
+# Зависимости
+node_modules/
+
+# Результаты сборки
+dist/
+dist-electron/
+build/
+out/
+release/
+*.tsbuildinfo
+
+# Кэш
+.vite/
+.cache/
+coverage/
+
+# Переменные окружения и секреты
 .env
+.env.*
+!.env.example
+
+# Логи
+*.log
+npm-debug.log*
+
+# Настройки редакторов
+.vscode/
+.idea/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Архивы
+*.zip
+*.rar
+*.7z
+
+# Локальные сохранения
+saves/
+node_modules/
